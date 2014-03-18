@@ -39,7 +39,12 @@ ratpack {
     handler("<%= baseName %>/<%= pluralize(entity.name) %>") {
       byMethod {
         get {
-          render json(<%= _.capitalize(entity.name) %>.list())
+          def <%= pluralize(entity.name) %>
+          background {
+            <%= pluralize(entity.name) %> = <%= _.capitalize(entity.name) %>.list()
+          } then {
+            render json(<%= pluralize(entity.name) %>)
+          }
         }
 
         post {
@@ -48,9 +53,12 @@ ratpack {
             <% var delim = ''; _.each(entity.attrs, function (attr) { %>
             <%= delim %><%= attr.attrName %>: <% if (attr.attrType == 'Date') { %>new LocalDate(<% }; %>node.get("<%= attr.attrName %>").as<%= attr.attrJsonType %>()<% if (attr.attrType == 'Date') { %>)<% }; %><% delim = ', '; }); %>
           )
-          <%= entity.name %>.save()
-          response.status(201)
-          render json(<%= entity.name %>)
+          background {
+            <%= entity.name %>.save()
+          } then {
+            response.status(201)
+            render json(<%= entity.name %>)
+          }
         }
       }
     }
@@ -58,31 +66,50 @@ ratpack {
     handler("<%= baseName %>/<%= pluralize(entity.name) %>/:id") {
       byMethod {
         get {
-          render json(<%= _.capitalize(entity.name) %>.get(pathTokens.id))
+          def <%= entity.name %>
+          background {
+            <%= entity.name %> = <%= _.capitalize(entity.name) %>.get(pathTokens.id)
+          } then {
+            render json(<%= entity.name %>)
+          }
         }
 
         put {
           JsonNode node = parse(jsonNode())
-          def <%= entity.name %> = <%= _.capitalize(entity.name) %>.get(pathTokens.id)
-          if (!<%= entity.name %>) {
-            response.status(404)
-            render ""
+          def <%= entity.name %>
+          background {
+            <%= entity.name %> = <%= _.capitalize(entity.name) %>.get(pathTokens.id)
+          } then {
+            if (!<%= entity.name %>) {
+              response.status(404)
+              render ""
+            }
+            <% _.each(entity.attrs, function (attr) { %>
+            <%= entity.name %>.<%= attr.attrName %> = <% if (attr.attrType == 'Date') { %>new LocalDate(<% }; %>node.get("<%= attr.attrName %>").as<%= attr.attrJsonType %>()<% if (attr.attrType == 'Date') { %>)<% }; %><% }); %>
+            background {
+              <%= entity.name %>.save()
+            } then {
+              render json(<%= entity.name %>)
+            }
           }
-          <% _.each(entity.attrs, function (attr) { %>
-          <%= entity.name %>.<%= attr.attrName %> = <% if (attr.attrType == 'Date') { %>new LocalDate(<% }; %>node.get("<%= attr.attrName %>").as<%= attr.attrJsonType %>()<% if (attr.attrType == 'Date') { %>)<% }; %><% }); %>
-          <%= entity.name %>.save()
-          render json(<%= entity.name %>)
         }
 
         delete {
-          def <%= entity.name %> = <%= _.capitalize(entity.name) %>.get(pathTokens.id)
-          if (!<%= entity.name %>) {
-            response.status(404)
-            render ""
+          def <%= entity.name %>
+          background {
+            <%= entity.name %> = <%= _.capitalize(entity.name) %>.get(pathTokens.id)
+          } then {
+            if (!<%= entity.name %>) {
+              response.status(404)
+              render ""
+            }
+            background {
+              <%= entity.name %>.delete()
+            } then {
+              response.status(204)
+              render ""
+            }
           }
-          <%= entity.name %>.delete()
-          response.status(204)
-          render ""
         }
       }
     }
