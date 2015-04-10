@@ -6,7 +6,7 @@ Ratpack is a Groovy-based micro-framework.  For AngularJS integration with other
 
 ## Installation
 
-Install [Git](http://git-scm.com), [node.js](http://nodejs.org), [JDK 7](https://www.java.com), and [Groovy](http://groovy.codehaus.org).
+Install [Git](http://git-scm.com), [node.js](http://nodejs.org), [JDK 8](https://www.java.com), [Groovy](http://groovy.codehaus.org), and [Gradle](https://gradle.org/).
 
 Install Yeoman:
 
@@ -26,7 +26,7 @@ In a new directory, generate the service:
 
 Run the service:
 
-    groovy -Dratpack.port=8080 app.groovy
+    gradle run
 
 Your service will run at [http://localhost:8080](http://localhost:8080).
 
@@ -48,11 +48,11 @@ You will be asked to specify attributes for the entity, where each attribute has
 
 Run the service:
 
-    groovy -Dratpack.port=8080 app.groovy
+    gradle run
     
 A client-side AngularJS application will now be available by running
 
-	grunt server
+    grunt server
 	
 The Grunt server will run at [http://localhost:9000](http://localhost:9000).  It will proxy REST requests to the Ratpack service running at [http://localhost:8080](http://localhost:8080).
 

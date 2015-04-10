@@ -179,18 +179,19 @@ EntityGenerator.prototype.files = function files() {
 
   this.template('_generator.json', 'generator.json');
 
-  var modelsDir = 'models/';
-  var publicDir = 'public/';
-  this.template('../../app/templates/_app.groovy', 'app.groovy');
-  this.template('models/_Entity.groovy', modelsDir + _s.capitalize(this.name) + '.groovy');
+  var ratpackDir = 'src/ratpack/';
+  var appDir = 'src/main/groovy/' + this.baseName;
+  var modelsDir = appDir + '/models/';
+  this.template('../../app/templates/src/ratpack/_Ratpack.groovy', ratpackDir + 'Ratpack.groovy');
+  this.template('src/main/groovy/_app/models/_Entity.groovy', modelsDir + _s.capitalize(this.name) + '.groovy');
   _.each(this.attrs, function (attr) {
     if (attr.attrType === 'Enum') {
       this.attr = attr;
-      this.template('models/_AttrEnum.groovy', modelsDir + _s.capitalize(attr.attrName) + 'Enum.groovy');
+      this.template('src/main/groovy/_app/models/_AttrEnum.groovy', modelsDir + _s.capitalize(attr.attrName) + 'Enum.groovy');
     }
   }.bind(this));
 
-  var publicDir = 'public/';
+  var publicDir = ratpackDir + 'public/';
   var publicCssDir = publicDir + 'css/';
   var publicJsDir = publicDir + 'js/';
   var publicViewDir = publicDir + 'views/';

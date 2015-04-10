@@ -1,4 +1,4 @@
 {
-    "directory": "public/lib",
+    "directory": "src/ratpack/public/lib",
     "json": "bower.json"
 }

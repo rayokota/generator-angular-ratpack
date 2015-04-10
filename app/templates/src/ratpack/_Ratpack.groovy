@@ -1,46 +1,37 @@
-@Grab("io.ratpack:ratpack-groovy:0.9.2")
-@Grab("io.ratpack:ratpack-jackson:0.9.2")
-@Grab("com.fasterxml.jackson.datatype:jackson-datatype-joda:2.3.2")
-@Grab("joda-time:joda-time:2.3")
-@Grab("org.jadira.usertype:usertype.core:3.0.0.GA")
-@Grab("org.grails:grails-datastore-gorm-hibernate4:3.0.0.RELEASE")
-@Grab("org.grails:grails-spring:2.3.7")
-@Grab("org.apache.derby:derby:10.10.1.1")
+import groovy.sql.Sql
+import static ratpack.spring.Spring.*
+
+import javax.sql.DataSource
+
+import static ratpack.groovy.Groovy.ratpack
+
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.joda.JodaModule
-import grails.orm.bootstrap.*
-import grails.persistence.*
-import org.apache.derby.jdbc.EmbeddedDriver
-import org.joda.time.LocalDate
-import org.springframework.jdbc.datasource.DriverManagerDataSource
 import ratpack.jackson.JacksonModule
-import models.*
-import static ratpack.groovy.Groovy.*
+import org.joda.time.LocalDate
+import <%= baseName %>.models.*
 import static ratpack.jackson.Jackson.json
 import static ratpack.jackson.Jackson.jsonNode
 
-init = new HibernateDatastoreSpringInitializer("models")
-def dataSource = new DriverManagerDataSource(EmbeddedDriver.name, "jdbc:derby:mydb;create=true", '', '')
-init.configureForDataSource(dataSource)
-
 ratpack {
-  modules {
-    bind ObjectMapper, new ObjectMapper()
-    register new JacksonModule()
-    init { ObjectMapper om ->
-      om.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-      om.registerModule(new JodaModule())
-    }
+  bindings {
+    ObjectMapper om = new ObjectMapper()
+    om.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+    om.registerModule(new JodaModule())
+    bindInstance(ObjectMapper, om)
+    add new JacksonModule()
   }
   handlers {
+    register spring(<%= baseName %>.Application)
+
     <% _.each(entities, function (entity) { %>
     handler("<%= baseName %>/<%= pluralize(entity.name) %>") {
       byMethod {
         get {
           def <%= pluralize(entity.name) %>
-          background {
+          blocking {
             <%= pluralize(entity.name) %> = <%= _.capitalize(entity.name) %>.list()
           } then {
             render json(<%= pluralize(entity.name) %>)
@@ -53,7 +44,7 @@ ratpack {
             <% var delim = ''; _.each(entity.attrs, function (attr) { %>
             <%= delim %><%= attr.attrName %>: <% if (attr.attrType == 'Date') { %>new LocalDate(<% }; %>node.get("<%= attr.attrName %>").as<%= attr.attrJsonType %>()<% if (attr.attrType == 'Date') { %>)<% }; %><% delim = ', '; }); %>
           )
-          background {
+          blocking {
             <%= entity.name %>.save()
           } then {
             response.status(201)
@@ -67,7 +58,7 @@ ratpack {
       byMethod {
         get {
           def <%= entity.name %>
-          background {
+          blocking {
             <%= entity.name %> = <%= _.capitalize(entity.name) %>.get(pathTokens.id)
           } then {
             render json(<%= entity.name %>)
@@ -77,7 +68,7 @@ ratpack {
         put {
           JsonNode node = parse(jsonNode())
           def <%= entity.name %>
-          background {
+          blocking {
             <%= entity.name %> = <%= _.capitalize(entity.name) %>.get(pathTokens.id)
           } then {
             if (!<%= entity.name %>) {
@@ -86,7 +77,7 @@ ratpack {
             }
             <% _.each(entity.attrs, function (attr) { %>
             <%= entity.name %>.<%= attr.attrName %> = <% if (attr.attrType == 'Date') { %>new LocalDate(<% }; %>node.get("<%= attr.attrName %>").as<%= attr.attrJsonType %>()<% if (attr.attrType == 'Date') { %>)<% }; %><% }); %>
-            background {
+            blocking {
               <%= entity.name %>.save()
             } then {
               render json(<%= entity.name %>)
@@ -96,14 +87,14 @@ ratpack {
 
         delete {
           def <%= entity.name %>
-          background {
+          blocking {
             <%= entity.name %> = <%= _.capitalize(entity.name) %>.get(pathTokens.id)
           } then {
             if (!<%= entity.name %>) {
               response.status(404)
               render ""
             }
-            background {
+            blocking {
               <%= entity.name %>.delete()
             } then {
               response.status(204)
@@ -115,6 +106,6 @@ ratpack {
     }
     <% }); %>
 
-    assets "public"
+    assets "public", "index.html"
   }
 }

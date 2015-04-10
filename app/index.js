@@ -62,12 +62,25 @@ AngularRatpackGenerator.prototype.app = function app() {
   this.template('Gruntfile.js', 'Gruntfile.js');
   this.copy('gitignore', '.gitignore');
 
-  var modelsDir = 'models/';
-  var publicDir = 'public/';
+  var gradleDir = 'gradle/wrapper/';
+  this.mkdir(gradleDir);
+  this.copy('build.gradle', 'build.gradle');
+  this.copy('gradlew', 'gradlew');
+  this.copy('gradlew.bat', 'gradlew.bat');
+  this.copy('gradle/wrapper/gradle-wrapper.jar', gradleDir + 'gradle-wrapper.jar');
+  this.copy('gradle/wrapper/gradle-wrapper.properties', gradleDir + 'gradle-wrapper.properties');
+
+  var ratpackDir = 'src/ratpack/';
+  var appDir = 'src/main/groovy/' + this.baseName;
+  var modelsDir = appDir + '/models';
+  var publicDir = ratpackDir + 'public/';
+  this.mkdir(ratpackDir);
+  this.mkdir(appDir);
   this.mkdir(modelsDir);
   this.mkdir(publicDir);
-  this.copy('ratpack.properties', 'ratpack.properties');
-  this.template('_app.groovy', 'app.groovy');
+  this.template('src/ratpack/_ratpack.properties', ratpackDir + 'ratpack.properties');
+  this.template('src/ratpack/_Ratpack.groovy', ratpackDir + 'Ratpack.groovy');
+  this.template('src/main/groovy/_app/_Application.groovy', appDir + 'Ratpack.groovy');
 
   var publicCssDir = publicDir + 'css/';
   var publicJsDir = publicDir + 'js/';

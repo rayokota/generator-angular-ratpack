@@ -1,0 +1,85 @@
+if (!JavaVersion.current().java8Compatible) {
+  throw new IllegalStateException("Must be built with Java 8 or higher")
+}
+ext {
+  ratpackVersion = '0.9.15'
+  useLocalRatpackRepo = ratpackVersion.endsWith('-SNAPSHOT')
+  springBootVersion = '1.2.3.RELEASE'
+  springVersion = '4.1.6.RELEASE'
+}
+
+buildscript {
+  def ratpackVersion = '0.9.15'
+  def useLocalRatpackRepo = ratpackVersion.endsWith('-SNAPSHOT')
+  repositories {
+    if(useLocalRatpackRepo) 
+      maven { url new File("../ratpack/build/localrepo").toURL() }
+    jcenter()
+  }
+  dependencies {
+    classpath "io.ratpack:ratpack-gradle:$ratpackVersion"
+  }
+}
+
+apply plugin: "io.ratpack.ratpack-groovy"
+apply plugin: "idea"
+apply plugin: "eclipse"
+apply plugin: "groovy"
+
+repositories {
+  if(useLocalRatpackRepo) 
+    maven { url new File("../ratpack/build/localrepo").toURL() }
+  jcenter()
+  maven { url "https://repo.spring.io/repo" } // for springloaded
+}
+
+dependencies {
+  compile "io.ratpack:ratpack-spring-boot:$ratpackVersion"
+  compile "io.ratpack:ratpack-jackson:$ratpackVersion"
+  compile "com.fasterxml.jackson.datatype:jackson-datatype-joda:2.5.2"
+  compile "joda-time:joda-time:2.7"
+  compile "org.jadira.usertype:usertype.core:3.2.0.GA"
+  compile 'org.grails:gorm-hibernate4-spring-boot:1.1.0.RELEASE'
+  compile 'org.grails:grails-core:2.5.0'
+  compile 'org.grails:grails-async:2.5.0'
+  compile 'org.grails:grails-validation:2.5.0'
+  compile "org.springframework:spring-orm:$springVersion"
+  compile "org.springframework.boot:spring-boot-cli:$springBootVersion", {
+     exclude group:'org.codehaus.groovy', module:'groovy'
+  }
+  compile 'org.codehaus.groovy:groovy-all:2.3.7'
+  compile "org.springframework.boot:spring-boot-autoconfigure:$springBootVersion"
+
+  testCompile "org.spockframework:spock-core:0.7-groovy-2.0"
+
+  runtime("com.h2database:h2:1.3.173")
+}
+
+if(System.getProperty("debug.ratpack")) {
+  def configureRun = project.tasks.findByName("configureRun")
+  configureRun.doLast {
+    JavaExec runTask = project.tasks.findByName("run") as JavaExec
+    runTask.with {
+      jvmArgs (['-Xdebug', '-Xnoagent', '-Djava.compiler=NONE', '-Dratpack.port=8080',
+               '-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005'] + runTask.jvmArgs)
+    }
+  }
+} else {
+  dependencies {
+    // SpringLoaded enables runtime hot reloading.
+    // It is not part of the app runtime and is not shipped in the distribution.
+    //springloaded "org.springframework:springloaded:1.2.1.RELEASE"
+  }
+  def configureRun = project.tasks.findByName("configureRun")
+  configureRun.doLast {
+    JavaExec runTask = project.tasks.findByName("run") as JavaExec
+    runTask.with {
+      jvmArgs (['-Dratpack.port=8080'] + runTask.jvmArgs)
+    }
+  }
+}
+
+allprojects {
+  sourceCompatibility = "1.8"
+  targetCompatibility = "1.8"
+}

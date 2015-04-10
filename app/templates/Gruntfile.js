@@ -9,8 +9,8 @@ module.exports = function (grunt) {
   grunt.initConfig({
     yeoman: {
       // configurable paths
-      app: require('./bower.json').appPath || '<%= baseName %>-service/src/main/resources/assets',
-      dist: '<%= baseName %>-service/target/classes/assets'
+      app: require('./bower.json').appPath || 'src/ratpack/public',
+      dist: 'src/ratpack/public'
     },
     sync: {
       dist: {
@@ -75,7 +75,7 @@ module.exports = function (grunt) {
           middleware: function (connect) {
             return [
               proxySnippet,
-              connect.static(require('path').resolve('<%= baseName %>-service/src/main/resources/assets/app'))
+              connect.static(require('path').resolve('src/ratpack/public'))
             ];
           }
         }
