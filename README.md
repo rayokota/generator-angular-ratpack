@@ -6,7 +6,7 @@ Ratpack is a Groovy-based micro-framework.  For AngularJS integration with other
 
 ## Installation
 
-Install [Git](http://git-scm.com), [node.js](http://nodejs.org), [JDK 8](https://www.java.com), [Groovy](http://groovy.codehaus.org), and [Gradle](https://gradle.org/).
+Install [Git](http://git-scm.com), [node.js](http://nodejs.org), [JDK 8](https://www.java.com), and [Groovy](http://groovy.codehaus.org).
 
 Install Yeoman:
 
@@ -26,7 +26,7 @@ In a new directory, generate the service:
 
 Run the service:
 
-    gradle run
+    ./gradlew run
 
 Your service will run at [http://localhost:8080](http://localhost:8080).
 
@@ -48,7 +48,7 @@ You will be asked to specify attributes for the entity, where each attribute has
 
 Run the service:
 
-    gradle run
+    ./gradlew run
     
 A client-side AngularJS application will now be available by running
 
